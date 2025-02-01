@@ -272,6 +272,10 @@ public class PipelineManager {
                 currentUserPipeline =
                         new ObjectDetectionPipeline((ObjectDetectionPipelineSettings) desiredPipelineSettings);
             }
+            case Python -> {
+                logger.debug("Creating Python Pipeline");
+                currentUserPipeline = new PythonPipeline((PythonPipelineSettings) desiredPipelineSettings);
+            }
             case Calib3d, DriverMode -> {}
         }
     }
@@ -362,6 +366,11 @@ public class PipelineManager {
             }
             case ObjectDetection -> {
                 var added = new ObjectDetectionPipelineSettings();
+                added.pipelineNickname = nickname;
+                return added;
+            }
+            case Python -> {
+                var added = new PythonPipelineSettings();
                 added.pipelineNickname = nickname;
                 return added;
             }
