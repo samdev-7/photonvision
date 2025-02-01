@@ -6,7 +6,8 @@ export enum PipelineType {
   ColoredShape = 3,
   AprilTag = 4,
   Aruco = 5,
-  ObjectDetection = 6
+  ObjectDetection = 6,
+  Python = 7
 }
 
 export enum AprilTagFamily {
@@ -297,6 +298,21 @@ export interface ObjectDetectionPipelineSettings extends PipelineSettings {
   box_thresh: number;
   model: string;
 }
+
+export interface PythonPipelineSettings extends PipelineSettings {
+  pipelineType: PipelineType.Python;
+}
+export type ConfigurablePythonPipelineSettings = Partial<Omit<PythonPipelineSettings, "pipelineType">> & ConfigurablePipelineSettings;
+export const DefaultPythonPipelineSettings: PythonPipelineSettings = {
+  ...DefaultPipelineSettings,
+  cameraGain: 20,
+  targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
+  ledMode: true,
+  outputShowMultipleTargets: false,
+  cameraExposureRaw: 6,
+  pipelineType: PipelineType.Python
+};
+
 export type ConfigurableObjectDetectionPipelineSettings = Partial<
   Omit<ObjectDetectionPipelineSettings, "pipelineType">
 > &
@@ -337,6 +353,7 @@ export type ActivePipelineSettings =
   | AprilTagPipelineSettings
   | ArucoPipelineSettings
   | ObjectDetectionPipelineSettings
+  | PythonPipelineSettings
   | Calibration3dPipelineSettings;
 
 export type ActiveConfigurablePipelineSettings =
@@ -345,4 +362,5 @@ export type ActiveConfigurablePipelineSettings =
   | ConfigurableAprilTagPipelineSettings
   | ConfigurableArucoPipelineSettings
   | ConfigurableObjectDetectionPipelineSettings
+  | ConfigurablePythonPipelineSettings
   | ConfigurableCalibration3dPipelineSettings;
