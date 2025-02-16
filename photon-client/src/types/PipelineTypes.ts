@@ -7,7 +7,7 @@ export enum PipelineType {
   AprilTag = 4,
   Aruco = 5,
   ObjectDetection = 6,
-  Python = 7
+  Algae = 7
 }
 
 export enum AprilTagFamily {
@@ -300,18 +300,18 @@ export interface ObjectDetectionPipelineSettings extends PipelineSettings {
   model: string;
 }
 
-export interface PythonPipelineSettings extends PipelineSettings {
-  pipelineType: PipelineType.Python;
+export interface AlgaePipelineSettings extends PipelineSettings {
+  pipelineType: PipelineType.Algae;
 }
-export type ConfigurablePythonPipelineSettings = Partial<Omit<PythonPipelineSettings, "pipelineType">> & ConfigurablePipelineSettings;
-export const DefaultPythonPipelineSettings: PythonPipelineSettings = {
+export type ConfigurableAlgaePipelineSettings = Partial<Omit<AlgaePipelineSettings, "pipelineType">> & ConfigurablePipelineSettings;
+export const DefaultAlgaePipelineSettings: AlgaePipelineSettings = {
   ...DefaultPipelineSettings,
   cameraGain: 20,
   targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
   ledMode: true,
   outputShowMultipleTargets: false,
   cameraExposureRaw: 6,
-  pipelineType: PipelineType.Python
+  pipelineType: PipelineType.Algae
 };
 
 export type ConfigurableObjectDetectionPipelineSettings = Partial<
@@ -354,7 +354,7 @@ export type ActivePipelineSettings =
   | AprilTagPipelineSettings
   | ArucoPipelineSettings
   | ObjectDetectionPipelineSettings
-  | PythonPipelineSettings
+  | AlgaePipelineSettings
   | Calibration3dPipelineSettings;
 
 export type ActiveConfigurablePipelineSettings =
@@ -363,5 +363,5 @@ export type ActiveConfigurablePipelineSettings =
   | ConfigurableAprilTagPipelineSettings
   | ConfigurableArucoPipelineSettings
   | ConfigurableObjectDetectionPipelineSettings
-  | ConfigurablePythonPipelineSettings
+  | ConfigurableAlgaePipelineSettings
   | ConfigurableCalibration3dPipelineSettings;

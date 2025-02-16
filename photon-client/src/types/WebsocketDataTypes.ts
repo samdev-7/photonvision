@@ -116,5 +116,5 @@ export enum WebsocketPipelineType {
   AprilTag = 2,
   Aruco = 3,
   ObjectDetection = 4,
-  Python = 5
+  Algae = 5
 }

@@ -3,12 +3,12 @@ package org.photonvision.vision.pipeline;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.Objects;
 
-@JsonTypeName("PythonPipelineSettings")
-public class PythonPipelineSettings extends AdvancedPipelineSettings{
+@JsonTypeName("AlgaePipelineSettings")
+public class AlgaePipelineSettings extends AdvancedPipelineSettings{
     
-    public PythonPipelineSettings() {
+    public AlgaePipelineSettings() {
         super();
-        pipelineType = PipelineType.Python;
+        pipelineType = PipelineType.Algae;
         cameraExposureRaw = 20;
     }
 
@@ -17,7 +17,7 @@ public class PythonPipelineSettings extends AdvancedPipelineSettings{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        PythonPipelineSettings that = (PythonPipelineSettings) o;
+        AlgaePipelineSettings that = (AlgaePipelineSettings) o;
         return true;
     }
 

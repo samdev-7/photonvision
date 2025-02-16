@@ -26,7 +26,7 @@ public enum PipelineType {
     AprilTag(2, AprilTagPipeline.class),
     Aruco(3, ArucoPipeline.class),
     ObjectDetection(4, ObjectDetectionPipeline.class),
-    Python(5, PythonPipeline.class);
+    Algae(5, AlgaePipeline.class);
 
     public final int baseIndex;
     public final Class clazz;
