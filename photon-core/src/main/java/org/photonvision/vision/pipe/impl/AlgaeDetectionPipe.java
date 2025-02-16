@@ -1,5 +1,6 @@
 package org.photonvision.vision.pipe.impl;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.opencv.core.Core;
@@ -18,11 +19,10 @@ import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.Contour;
 import org.photonvision.vision.pipe.CVPipe;
 
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 
-public class AlgaeDetectionPipe extends CVPipe<Mat, Pair<Mat, Optional<AlgaeDetectionPipe.AlgaePose>>, AlgaeDetectionPipe.AlgaeDetectionParams> {
+public class AlgaeDetectionPipe extends CVPipe<Mat, List<AlgaeDetectionPipe.AlgaePose>, AlgaeDetectionPipe.AlgaeDetectionParams> {
 
     // Constants
     private static final double KNOWN_DIAMETER = 475.00; // mm
@@ -91,32 +91,32 @@ public class AlgaeDetectionPipe extends CVPipe<Mat, Pair<Mat, Optional<AlgaeDete
     }
 
     @Override
-    protected Pair<Mat, Optional<AlgaePose>> process(Mat in) {
+    protected List<AlgaePose> process(Mat in) {
         Mat outputMat = in.clone();
         Optional<AlgaeResult> result = detector.findLargestAlgae(outputMat);
         if (result.isPresent()) {
             Point algaeCenter = result.get().getCenter();
             double algaeRadius = result.get().getRadius();
 
-            // Calculate distance and angles
-            double distance = (computation.calculateDistance(algaeRadius * 2)) / 10; // in cm
-            double x_angle = computation.calculateHorizontalAngle(in, algaeCenter.x, 45.7);
-            double y_angle = computation.calculateVerticalAngle(in, algaeCenter.y, 65);
+            // // Calculate distance and angles
+            // double distance = (computation.calculateDistance(algaeRadius * 2)) / 10; // in cm
+            // double x_angle = computation.calculateHorizontalAngle(in, algaeCenter.x, 45.7);
+            // double y_angle = computation.calculateVerticalAngle(in, algaeCenter.y, 65);
 
             // Optionally, display some information on the image
-            Imgproc.putText(outputMat, "Distance: " + distance + " cm", new Point(50, 50),
-                    Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(255, 0, 0), 2);
-            Imgproc.putText(outputMat, "X Angle: " + x_angle + " degrees", new Point(50, 100),
-                    Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(255, 0, 0), 2);
-            Imgproc.putText(outputMat, "Y Angle: " + y_angle + " degrees", new Point(50, 150),
-                    Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(255, 0, 0), 2);
+            // Imgproc.putText(outputMat, "Distance: " + distance + " cm", new Point(50, 50),
+            //         Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(255, 0, 0), 2);
+            // Imgproc.putText(outputMat, "X Angle: " + x_angle + " degrees", new Point(50, 100),
+            //         Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(255, 0, 0), 2);
+            // Imgproc.putText(outputMat, "Y Angle: " + y_angle + " degrees", new Point(50, 150),
+            //         Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(255, 0, 0), 2);
 
             int unpaddedX = (int) algaeCenter.x - PADDING;
             int unpaddedY = (int) algaeCenter.y - PADDING;
-            Imgproc.circle(outputMat, new Point(unpaddedX, unpaddedY), (int) algaeRadius, new Scalar(255, 0, 255), 5);
-            return Pair.of(outputMat, Optional.of(new AlgaePose(new Point(unpaddedX, unpaddedY), algaeRadius, in)));
+            // Imgproc.circle(outputMat, new Point(unpaddedX, unpaddedY), (int) algaeRadius, new Scalar(255, 0, 255), 5);
+            return List.of(new AlgaePose(new Point(unpaddedX, unpaddedY), algaeRadius, in));
         }
-        return Pair.of(outputMat, Optional.empty());
+        return List.of();
     }
 
     public static class AlgaeDetectionParams {
