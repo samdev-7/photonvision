@@ -9,18 +9,20 @@ import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Rect2d;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
-import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.LogLevel;
-import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.opencv.CVShape;
+import org.photonvision.vision.opencv.Contour;
 import org.photonvision.vision.pipe.CVPipe;
 
-public class AlgaeDetectionPipe extends CVPipe<Mat, Mat, AlgaeDetectionPipe.AlgaeDetectionParams> {
-    private static final Logger logger = new Logger(CameraConfiguration.class, LogGroup.General);
+import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+
+public class AlgaeDetectionPipe extends CVPipe<Mat, Pair<Mat, Optional<AlgaeDetectionPipe.AlgaePose>>, AlgaeDetectionPipe.AlgaeDetectionParams> {
 
     // Constants
     private static final double KNOWN_DIAMETER = 475.00; // mm
@@ -36,18 +38,60 @@ public class AlgaeDetectionPipe extends CVPipe<Mat, Mat, AlgaeDetectionPipe.Alga
 
     private static final Mat CAMERA_MATRIX = new Mat(3, 3, CvType.CV_64F);
 
-    private final ObjectDetection detector = new ObjectDetection(LOWER_BALL, UPPER_BALL, MIN_AREA, MIN_CIRCULARITY);
-    private final Computation computation = new Computation(CAMERA_MATRIX.get(0,0)[0], KNOWN_DIAMETER, CAMERA_MATRIX);
+    private final ObjectDetection detector;
+    private final Computation computation; 
 
     public AlgaeDetectionPipe() {
         super();
         CAMERA_MATRIX.put(0, 0, 1413.70008, 0, 314.24724784);
         CAMERA_MATRIX.put(1, 0, 0, 1437.31, 240.10474105);
         CAMERA_MATRIX.put(2, 0, 0, 0, 1);
+
+        detector = new ObjectDetection(LOWER_BALL, UPPER_BALL, MIN_AREA, MIN_CIRCULARITY);
+        computation = new Computation(CAMERA_MATRIX.get(0,0)[0], KNOWN_DIAMETER, CAMERA_MATRIX);
+    }
+
+    public class AlgaePose {
+        private Point algaeCenter;
+        private double algaeRadius;
+        private Mat mat;
+
+        public AlgaePose(Point algaeCenter, double algaeRadius, Mat in) {
+            this.algaeCenter = algaeCenter;
+            this.algaeRadius = algaeRadius;
+            this.mat = in;
+        }
+
+        public double getDistance() {
+            return (computation.calculateDistance(algaeRadius * 2)) / 10; // in cm
+        }
+
+        public double getXAngle() {
+            return computation.calculateHorizontalAngle(mat, algaeCenter.x, 45.7);
+        }
+
+        public double getYAngle() {
+            return computation.calculateVerticalAngle(mat, algaeCenter.y, 65);
+        }
+
+        public Contour geContour() {
+            return new Contour(new Rect2d(algaeCenter.x-algaeRadius, algaeCenter.y-algaeRadius, algaeRadius*2, algaeRadius*2));
+        }
+
+        public CVShape getShape() {
+            return new CVShape(geContour(), algaeCenter, algaeRadius);
+        }
+
+        public Transform3d getCameraToAlgaeTransform() {
+            double xTranslation = getDistance() * Math.cos(Math.toRadians(getYAngle())) * Math.cos(Math.toRadians(getXAngle()));
+            double yTranslation = -1 * getDistance() * Math.cos(Math.toRadians(getYAngle())) * Math.sin(Math.toRadians(getXAngle()));
+            double zTranslation = getDistance() * Math.sin(Math.toRadians(getYAngle()));
+            return new Transform3d(xTranslation, yTranslation, zTranslation, new Rotation3d());
+        }
     }
 
     @Override
-    protected Mat process(Mat in) {
+    protected Pair<Mat, Optional<AlgaePose>> process(Mat in) {
         Mat outputMat = in.clone();
         Optional<AlgaeResult> result = detector.findLargestAlgae(outputMat);
         if (result.isPresent()) {
@@ -70,9 +114,9 @@ public class AlgaeDetectionPipe extends CVPipe<Mat, Mat, AlgaeDetectionPipe.Alga
             int unpaddedX = (int) algaeCenter.x - PADDING;
             int unpaddedY = (int) algaeCenter.y - PADDING;
             Imgproc.circle(outputMat, new Point(unpaddedX, unpaddedY), (int) algaeRadius, new Scalar(255, 0, 255), 5);
-            return outputMat;
+            return Pair.of(outputMat, Optional.of(new AlgaePose(new Point(unpaddedX, unpaddedY), algaeRadius, in)));
         }
-        return in;
+        return Pair.of(outputMat, Optional.empty());
     }
 
     public static class AlgaeDetectionParams {
